@@ -1,5 +1,7 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API;
@@ -10,13 +12,17 @@ public static class IdentityServiceExtensions
     {
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
-            options.TokenValidationParameters = new TokenValidationParameters
+            string tokenKey = configuration["TokenKey"];
+            if (!string.IsNullOrEmpty(tokenKey))
             {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["TokenKey"])),
-                ValidateIssuer = false,
-                ValidateAudience = false
-            };
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            }
         });
 
         return services;
